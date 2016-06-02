@@ -1,0 +1,132 @@
+﻿<UserControl x:Class="JsonGenerator.TreeShellsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JsonGenerator"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:entities="clr-namespace:JsonGenerator.DbEntities"
+             xmlns:conv="clr-namespace:JsonGenerator.Converters"
+             xmlns:base="clr-namespace:JsonGenerator.Base"
+             mc:Ignorable="d" MinWidth="500" MinHeight="500">
+
+    <UserControl.Resources>
+        
+            <conv:BooleanToVisibility x:Key="BooleanToVisibility" />
+            <conv:BooleanToNonVisibility x:Key="BooleanToNonVisibility" />
+            <ObjectDataProvider x:Key="dbSchema" ObjectInstance="{x:Static Member=entities:DbSchema.Instance}" />
+            <ObjectDataProvider x:Key="commonDataSources" ObjectInstance="{x:Static Member=base:CommonDataSources.Instance}" />
+    </UserControl.Resources>
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <ToolBar Visibility="{Binding IsEditable, Converter={StaticResource BooleanToVisibility}}" >
+            <MenuItem Header="New Sibling" x:Name="NewSibling"/>
+            <MenuItem Header="New Child" x:Name="NewChild"/>
+            <!--<MenuItem Header="MakeShellCode" x:Name="MakeShellCode"/>-->
+            <MenuItem Header="Delete" x:Name="Delete"/>
+            
+            <MenuItem Header="Up" x:Name="MoveUp"/>
+            <MenuItem Header="Down" x:Name="MoveDown"/>
+
+            <MenuItem Header="Save" x:Name="Save"/>
+        </ToolBar>
+        
+        <TreeView Grid.Row="1" Grid.ColumnSpan="1" x:Name="trwShells" 
+                  BorderThickness="0,0,2,0" BorderBrush="Black"
+                  ItemsSource="{Binding TreeShells, Source={StaticResource dbSchema}}" 
+                  cal:Message.Attach="[Event SelectedItemChanged] = [OnSelectionChangedAction($executionContext)]" SelectedValuePath="SelectedItem">
+            <TreeView.Resources>
+                <DataTemplate x:Key="NormalTemplate">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding ShellDescr}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </DataTemplate>
+                <!--<DataTemplate x:Key="EditTemplate">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Text="{Binding ShellDescr}" VerticalAlignment="Center" KeyUp="TextBox_KeyUp"/>
+                    </StackPanel>
+                </DataTemplate>-->
+            </TreeView.Resources>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <!--<Setter Property="IsSelected" Value="{Binding IsSelected}" />-->
+                    <Setter Property="IsExpanded" Value="True" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                    <ContentPresenter Content="{Binding}">
+                        <ContentPresenter.Style>
+                            <Style TargetType="{x:Type ContentPresenter}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource NormalTemplate}"/>
+                                <!--<Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource EditTemplate}" />
+                                    </DataTrigger>
+                                </Style.Triggers>-->
+                            </Style>
+                        </ContentPresenter.Style>
+                    </ContentPresenter>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+            <!--<TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding ShellDescr}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>-->
+            
+        </TreeView>
+        <Grid Grid.Row="1" Grid.Column="1" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Margin="5,0,5,0">Name</Label>
+            <Label Grid.Row="1" Margin="5,0,5,0">Header</Label>
+            <Label Grid.Row="2" Margin="5,0,5,0">Descr</Label>
+            <Label Grid.Row="3" Margin="5,0,5,0">Type</Label>
+
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedItem.ShellName}" Margin="5,0,5,0"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedItem.Header}" Margin="5,0,5,0"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedItem.ShellDescr}" Margin="5,0,5,0"/>
+            <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbShellType" 
+                      SelectedValue="{Binding SelectedItem.ShellType}" 
+                      ItemsSource="{Binding ShellTypes, Source={StaticResource commonDataSources}}" Margin="5,0,5,0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid >
+                            <TextBlock Text="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding IsEditable, Converter={StaticResource BooleanToNonVisibility}, Mode=OneWay}">
+            <Button Content="Select" x:Name="Select" Width="80"></Button>
+            <Button Content="Cancel" x:Name="Cancel" Width="80"></Button>
+        </StackPanel>
+    </Grid>
+
+
+</UserControl>

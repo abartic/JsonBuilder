@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="JsonGenerator.ShellView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cal="http://www.caliburnproject.org" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             MinHeight="600" MinWidth="800" >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+    
+        </Grid.RowDefinitions>
+        
+        <ToolBar >
+            <!--<MenuItem Header="New" x:Name="NewShell"/>-->
+            <MenuItem Header="SelectShell" x:Name="EditShell"/>
+            <MenuItem Header="TreeShell" x:Name="EditTreeShells"/>
+            <MenuItem Header="Save Lang Objs" x:Name="SaveLangObjs"/>
+            <!--<MenuItem Header="Delete" x:Name="Delete"/>-->
+            <MenuItem Header="Refresh Schema" x:Name="RefreshDbSchema"/>
+            <MenuItem Header="Exit" x:Name="Exit"/>
+        </ToolBar>
+
+        <xctk:BusyIndicator x:Name="ctrlIsLoadingIndicator" Grid.Row="1" IsBusy="{Binding IsLoadingShowed}">
+            <ContentControl x:Name="ActiveItem" />
+        </xctk:BusyIndicator>
+        
+    </Grid>
+    
+</UserControl>

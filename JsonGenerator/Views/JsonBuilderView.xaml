@@ -1,0 +1,445 @@
+﻿<UserControl x:Class="JsonGenerator.JsonBuilderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             xmlns:conv="clr-namespace:JsonGenerator.Converters"
+             xmlns:entities="clr-namespace:JsonGenerator.DbEntities"
+             xmlns:base="clr-namespace:JsonGenerator.Base"
+             xmlns:local="clr-namespace:JsonGenerator"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:cal="http://www.caliburnproject.org">
+    
+    <UserControl.Resources>
+        <conv:BooleanToVisibility x:Key="BooleanToVisibility" />
+        <conv:IntegerToString x:Key="IntegerToString" />
+
+        <ObjectDataProvider x:Key="dbSchema" ObjectInstance="{x:Static Member=entities:DbSchema.Instance}" />
+        <ObjectDataProvider x:Key="commonDataSources" ObjectInstance="{x:Static Member=base:CommonDataSources.Instance}" />
+        <ObjectDataProvider x:Key="package"  ObjectType="{x:Type local:JsonBuilderViewModel}"/>
+
+        
+        
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <ToolBar>
+            <MenuItem Header="New Detail" x:Name="NewDetail" Visibility="{Binding IsMultiTable, Converter={StaticResource BooleanToVisibility}, Mode=OneWay}"/>
+            <MenuItem Header="Delete Detail" x:Name="DeleteDetail" Visibility="{Binding IsMultiTable, Converter={StaticResource BooleanToVisibility}, Mode=OneWay}"/>
+            <MenuItem Header="Refresh Schema" x:Name="RefreshDbSchema"/>
+            <MenuItem Header="Save" x:Name="Save"/>
+        </ToolBar>
+
+        <GroupBox Header="Shell info" Grid.Row="1" Margin="0,10,0,10">
+            <Grid >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                    
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"/>
+                    
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"/>
+                    
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"/>
+                    
+                    <ColumnDefinition Width="2*"/>
+                    
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Column="0" VerticalAlignment="Center" Margin="5,0,5,0">Shell Name:</Label>
+                <TextBox Grid.Column="1" Text="{Binding Shell.ShellName}" VerticalAlignment="Center" IsReadOnly="True" IsEnabled="False" Margin="5,0,5,0"/>
+
+                <Label Grid.Column="2" VerticalAlignment="Center" Margin="5,0,5,0">Header:</Label>
+                <TextBox Grid.Column="3" Text="{Binding Shell.Header}" VerticalAlignment="Center" IsReadOnly="True" IsEnabled="False" Margin="5,0,5,0"/>
+
+                <Label Grid.Column="4" Grid.Row="0" VerticalAlignment="Center" Margin="5,0,5,0">Shell descr:</Label>
+                <TextBox Grid.Column="5" Grid.Row="0" Text="{Binding Shell.ShellDescr}" IsReadOnly="True" IsEnabled="False" VerticalAlignment="Center" Margin="5,0,5,0"/>
+
+                <Button Content="Set Shell" Grid.Column="6" x:Name="SelectShellName" />
+                
+                <Label Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Margin="5,0,5,0">Type:</Label>
+                <ComboBox  Grid.Column="1" Grid.Row="1" Name="cmbShellType" SelectedValue="{Binding Shell.ShellType}" ItemsSource="{Binding ShellTypes, Source={StaticResource commonDataSources}}" Margin="5,0,5,0">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid >
+                                <TextBlock Text="{Binding}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Label Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" Margin="5,0,5,0">Icon:</Label>
+                <TextBox Grid.Column="3" Grid.Row="1" Text="{Binding Shell.Icon}" VerticalAlignment="Center" Margin="5,0,5,0"/>
+
+                <Label Grid.Column="4" Grid.Row="1" VerticalAlignment="Center" Margin="5,0,5,0">Controllers:</Label>
+                <TextBox Grid.Column="5" Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding Shell.Controllers}" VerticalAlignment="Center" Margin="5,0,5,0"/>
+
+                <Label Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Margin="5,0,5,0">Filter Source:</Label>
+                <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Shell.FilterSource}" VerticalAlignment="Center" Margin="5,0,5,0"/>
+
+                <Label Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" Margin="5,0,5,0">Filter Path:</Label>
+                <TextBox Grid.Column="3" Grid.Row="2" Text="{Binding Shell.FilterPath}" VerticalAlignment="Center" Margin="5,0,5,0"/>
+
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Header="Header/details" Grid.Row="2" Margin="0,10,0,10">
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TreeView Grid.Column="0" x:Name="trwRelations" ItemsSource="{Binding ShellTables}"  Visibility="{Binding IsMultiTable, Mode=OneWay, Converter={StaticResource BooleanToVisibility}}" 
+                          SelectedItemChanged="trwRelations_SelectedItemChanged">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                            <Setter Property="IsExpanded" Value="True" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding TableName}" VerticalAlignment="Center"/>
+                                <Label VerticalAlignment="Center">(</Label>
+                                <TextBlock Text="{Binding EntityInfo}" VerticalAlignment="Center"/>
+                                <Label VerticalAlignment="Center">)</Label>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Visibility="{Binding IsMainTableSelected, Converter={StaticResource BooleanToVisibility}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="9*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label>Table name:</Label>
+                            <ComboBox  Name="cmbMainTable" SelectedValue="{Binding SelectedShellTable.Table}" ItemsSource="{Binding DbSchema.Tables}" Grid.Column="1">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid >
+                                            <TextBlock Text="{Binding TableName}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid Grid.Row="1"  Visibility="{Binding IsRelationTableSelected, Converter={StaticResource BooleanToVisibility}}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label>Table name:</Label>
+                            <ComboBox  Name="cmbRelationTable" SelectedValue="{Binding SelectedShellTable.Table}" ItemsSource="{Binding RelationTables}" Grid.Column="1">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid >
+                                            <TextBlock Text="{Binding TableName}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <Label Grid.Column="2">Title:</Label>
+                            <TextBox Text="{Binding SelectedShellTable.PackageDetail.Title}" Grid.Column="3"/>
+
+                            <Label Grid.Column="4">Control:</Label>
+                            <ComboBox  Name="cmbDetailsControls" Grid.Column="5" SelectedValue="{Binding SelectedShellTable.PackageDetail.Control}" 
+                               ItemsSource="{Binding DetailsControls, Source={StaticResource commonDataSources}}"  >
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid >
+                                            <TextBlock Text="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <Label Grid.Column="6">Data source:</Label>
+                            <TextBox Text="{Binding SelectedShellTable.PackageDetail.DataSource}" Grid.Column="7"/>
+
+                            <Label Grid.Column="8">Persist:</Label>
+                            <ComboBox  Name="cmbPersistTypes" SelectedValue="{Binding SelectedShellTable.PackageDetail.Persist}" 
+                               ItemsSource="{Binding PersistTypes, Source={StaticResource commonDataSources}}"  Grid.Column="9">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid >
+                                            <TextBlock Text="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+
+                            <Label Grid.Column="0" Grid.Row="1">Panel name:</Label>
+                            <ComboBox Grid.Column="1" Grid.Row="1" 
+                                      Name="cmbPanels" 
+                                      SelectedValue="{Binding SelectedShellTable.PackageDetail.Panel}" 
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath=""
+                                      ItemsSource="{Binding MainShellTable.ShellPanels}" >
+                            </ComboBox>
+
+                            
+                        </Grid>
+                    </Grid>
+                    
+                    <GroupBox Header="Items" Margin="0,10,0,10" Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0"  Orientation="Horizontal">
+                                <Button Content="+" Margin="0,5,0,0" Width="50" x:Name="AddItem"/>
+                                <Button Content="-" Margin="0,5,0,0" Width="50" x:Name="DeleteItem"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="grdColumns" Grid.Row="1" ItemsSource="{Binding SelectedShellTable.JsonPackageItems}" AutoGenerateColumns="False" VerticalScrollBarVisibility="Auto" 
+                                      CanUserAddRows="False" CanUserSortColumns="False" SelectedItem="{Binding SelectedShellTableItem}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Id}" Header="Id"/>
+                                    <DataGridTextColumn Binding="{Binding TitleTranslation}" Header="Title"/>
+                                    <DataGridTextColumn Binding="{Binding Field}" Header="Field"/>
+                                    <DataGridTextColumn Binding="{Binding Resource}" Header="Resource"/>
+                                    <DataGridTextColumn Binding="{Binding DefaultValue}" Header="DefaultValue"/>
+
+                                    <DataGridCheckBoxColumn Binding="{Binding IsReadOnly}" Header="IsReadOnly"/>
+                                    <DataGridCheckBoxColumn Binding="{Binding Nullable}" Header="Nullable"/>
+                                    <DataGridCheckBoxColumn Binding="{Binding Sortable}" Header="Sortable"/>
+                                    <DataGridCheckBoxColumn Binding="{Binding FilterSortable}" Header="Filter Sortable"/>
+                                    <DataGridCheckBoxColumn Binding="{Binding Opened}" Header="Filter Opened"/>
+
+                                    <DataGridComboBoxColumn SelectedValuePath=""
+                                            SelectedValueBinding="{Binding Type}"
+                                            DisplayMemberPath="" 
+                                            ItemsSource="{Binding Types, Source={StaticResource commonDataSources}}" 
+                                            Header="Type" />
+                                    <DataGridComboBoxColumn SelectedValuePath=""
+                                            SelectedValueBinding="{Binding DbType}"
+                                            DisplayMemberPath="" 
+                                            ItemsSource="{Binding DbTypes, Source={StaticResource commonDataSources}}" 
+                                            Header="DbType" />
+                                    <DataGridTextColumn Binding="{Binding Decimals}" Header="Decimals" />
+                                    <DataGridTextColumn Binding="{Binding Format}" Header="Format"/>
+
+                                    <DataGridTextColumn Binding="{Binding Filter}" Header="Filter" />
+                                    <DataGridTextColumn Binding="{Binding FilterConditionIndex, Converter={StaticResource IntegerToString}}" Header="FilterConditionIndex" />
+                                    <DataGridTextColumn Binding="{Binding FilterResultIndex, Converter={StaticResource IntegerToString}}" Header="FilterResultIndex" />
+
+                                    <DataGridComboBoxColumn Header="Panel Name"  >
+                                        <DataGridComboBoxColumn.ElementStyle>
+                                            <Style TargetType="{x:Type ComboBox}">
+                                                <Setter Property="ItemsSource" Value="{Binding DataContext.SelectedShellTable.ShellPanels, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                <Setter Property="DisplayMemberPath" Value="Name" />
+                                                <Setter Property="SelectedValuePath" Value="" />
+                                                <Setter Property="SelectedValue" Value="{Binding Panel}" />
+                                            </Style>
+                                        </DataGridComboBoxColumn.ElementStyle>
+                                        <DataGridComboBoxColumn.EditingElementStyle>
+                                            <Style TargetType="{x:Type ComboBox}">
+                                                <Setter Property="ItemsSource" Value="{Binding DataContext.SelectedShellTable.ShellPanels, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" />
+                                                <Setter Property="DisplayMemberPath" Value="Name" />
+                                                <Setter Property="SelectedValuePath" Value="" />
+                                                <Setter Property="SelectedValue" Value="{Binding Panel}" />
+                                            </Style>
+                                        </DataGridComboBoxColumn.EditingElementStyle>
+                                    </DataGridComboBoxColumn>
+
+                                    <DataGridTextColumn Binding="{Binding PanelIndex, Converter={StaticResource IntegerToString}}" Header="PanelIndex" />
+
+                                   
+
+                                    <DataGridComboBoxColumn SelectedValuePath="Type"
+                                            SelectedValueBinding="{Binding Selector}"
+                                            DisplayMemberPath="Type" 
+                                            ItemsSource="{Binding Selectors, Source={StaticResource dbSchema}}" 
+                                            Header="Enum Selector" />
+
+                                    <DataGridComboBoxColumn SelectedValuePath="EntityName"
+                                            SelectedValueBinding="{Binding SelectorEntity}"
+                                            DisplayMemberPath="EntityName" 
+                                            ItemsSource="{Binding Entities, Source={StaticResource dbSchema}}" 
+                                            Header="Selector Entity" />
+                                    
+                                    <!--<DataGridTextColumn Binding="{Binding SelectorEntity}" Header="Selector Entity" />-->
+                                    <DataGridTextColumn Binding="{Binding SelectorDisplayKeys}" Header="Selector Display Keys" />
+                                    <DataGridTextColumn Binding="{Binding SelectorParams}" Header="SelectorParams" />
+
+                                    <DataGridComboBoxColumn 
+                                            SelectedValueBinding="{Binding Control}"
+                                            ItemsSource="{Binding Controls, Source={StaticResource commonDataSources}}" 
+                                            Header="Control" />
+                                    <DataGridTextColumn Binding="{Binding Path}" Header="Path"/>
+                                    <DataGridTextColumn Binding="{Binding DisplayPath}" Header="DisplayPath"/>
+                                    <DataGridTextColumn Binding="{Binding ValuePath}" Header="ValuePath"/>
+                                    <DataGridTextColumn Binding="{Binding ItemContentPath}" Header="Item Content Path"/>
+                                    <DataGridTextColumn Binding="{Binding ItemHeaderPath}" Header="Item Header Path"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </GroupBox>
+                    
+                    <Grid Grid.Row="2">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Header="Panels" Grid.Column="0" Margin="0,10,0,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <Button Content="+" Margin="0,5,0,0" Width="50" x:Name="AddShellPanel"/>
+                                    <Button Content="-" Margin="0,5,0,0" Width="50" x:Name="DeleteShellPanel"/>
+                                </StackPanel>
+                                <DataGrid x:Name="grdPanels" Grid.Row="1" ItemsSource="{Binding SelectedShellTable.ShellPanels}" AutoGenerateColumns="False"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
+                                          SelectedItem="{Binding SelectedShellPanel}" VerticalScrollBarVisibility="Auto"  >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Name}" Header="Name"/>
+                                        <DataGridTextColumn Binding="{Binding HeaderTranslation}" Header="Header"/>
+                                        <DataGridTextColumn Binding="{Binding Row}" Header="Row"/>
+                                        <DataGridTextColumn Binding="{Binding Columns}" Header="Columns"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Standard actions" Grid.Column="1" Margin="0,10,0,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0"  Orientation="Horizontal">
+                                    <Button Content="+All" Margin="0,5,0,0" Width="50" x:Name="AddAllShellStdAction"/>
+                                    <Button Content="+" Margin="0,5,0,0" Width="50" x:Name="AddShellStdAction"/>
+                                    <Button Content="-" Margin="0,5,0,0" Width="50" x:Name="DeleteShellStdAction"/>
+                                </StackPanel>
+                                <DataGrid x:Name="grdStdActions" Grid.Row="1" 
+                                     ItemsSource="{Binding SelectedShellTable.ShellStdActions}" AutoGenerateColumns="False" 
+                                     CanUserAddRows="False" CanUserDeleteRows="False"  CanUserSortColumns="False"
+                                     SelectedItem="{Binding SelectedShellTable.SelectedShellStdAction}" VerticalScrollBarVisibility="Auto" >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Name}" Header="Name"/>
+                                        <DataGridTextColumn Binding="{Binding CaptionTranslation}" Header="Caption"/>
+                                        <DataGridTextColumn Binding="{Binding UIClass}" Header="Icon Code" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Custom Actions" Grid.Column="2" Margin="0,10,0,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <Button Content="+" Margin="0,5,0,0" Width="50" x:Name="AddShellAction"/>
+                                    <Button Content="-" Margin="0,5,0,0" Width="50" x:Name="DeleteShellAction"/>
+                                </StackPanel>
+                                <DataGrid x:Name="grdActions" Grid.Row="1" 
+                                    ItemsSource="{Binding SelectedShellTable.ShellActions}" AutoGenerateColumns="False"
+                                    CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
+                                    SelectedItem="{Binding SelectedShellTable.SelectedShellAction}" VerticalScrollBarVisibility="Auto" >
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Binding="{Binding Name}" Header="Name"/>
+                                        <DataGridTextColumn Binding="{Binding CaptionTranslation}" Header="Caption"/>
+                                        <DataGridTextColumn Binding="{Binding UIClass}" Header="Icon Code" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Header="Dependencies" Grid.Row="3" Margin="0,10,0,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Button Content="+" Margin="0,5,0,0" Width="50" x:Name="AddDependency"/>
+                    <Button Content="-" Margin="0,5,0,0" Width="50" x:Name="DeleteDependency"/>
+                </StackPanel>
+                <DataGrid Grid.Row="1" x:Name="grdDependencies" Grid.Column="0" ItemsSource="{Binding ShellDependencies}" CanUserAddRows="True" CanUserDeleteRows="True" AutoGenerateColumns="False" 
+                          CanUserSortColumns="False" SelectedItem="{Binding SelectedShellDependency}"
+                          VerticalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridComboBoxColumn SelectedValuePath="Type"
+                                                SelectedValueBinding="{Binding Type}"
+                                                DisplayMemberPath="Type" 
+                                                ItemsSource="{Binding Dependencies, Source={StaticResource dbSchema}}" 
+                                                Header="Type" />
+
+
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
